@@ -7,14 +7,12 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from stego import core, crypto
 from stego.lsb import bytes_to_bits, bits_to_bytes
 
-
 def _dummy_image(w=128, h=128, seed=0):
     rng = np.random.default_rng(seed)
     return rng.integers(0, 256, size=(h, w, 3), dtype=np.uint8)
 
 
 def test_sisip_lalu_ekstrak_utuh():
-    """Pesan yang disisipkan dapat diekstrak kembali secara utuh."""
     img = _dummy_image()
     pesan = "Steganografi LSB + AES berhasil!"
     stego = core.embed(img, pesan, password="pw123", stego_key="key-abc")
@@ -23,7 +21,6 @@ def test_sisip_lalu_ekstrak_utuh():
 
 
 def test_stego_key_salah_gagal():
-    """Ekstraksi dengan stego-key salah harus gagal."""
     img = _dummy_image()
     stego = core.embed(img, "rahasia", password="pw", stego_key="key-benar")
     gagal = False
@@ -35,7 +32,6 @@ def test_stego_key_salah_gagal():
 
 
 def test_kapasitas_ditolak():
-    """Pesan melebihi kapasitas citra harus ditolak (CapacityError)."""
     img = _dummy_image(w=16, h=16)
     ditolak = False
     try:
@@ -46,7 +42,6 @@ def test_kapasitas_ditolak():
 
 
 def test_tamper_terdeteksi():
-    """Bila citra stego diubah, dekripsi AES-GCM gagal (anti-tamper)."""
     img = _dummy_image()
     stego = core.embed(img, "pesan penting", password="pw", stego_key="key")
     rng = np.random.default_rng(1)
@@ -61,7 +56,6 @@ def test_tamper_terdeteksi():
 
 
 def test_konversi_bit_byte():
-    """Konversi bytes <-> bits harus konsisten."""
     data = b"\x00\xFF\xA5\x01"
     assert bits_to_bytes(bytes_to_bits(data)) == data
 

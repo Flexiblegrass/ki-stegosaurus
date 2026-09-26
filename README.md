@@ -6,9 +6,9 @@ memakai metode **LSB (Least Significant Bit)** yang ditulis sendiri, dengan pesa
 Proyek Aplikasi Kriptografi (Topik B — Steganografi), mata kuliah Keamanan Informasi.
 
 ## Anggota Kelompok
-- Nama : Najmi Sabila Almusfiroh — NPM : 247006111125
-- Nama : Muthia Febrahma Khoirunnisa — NPM : 247006111130
-- Nama : Siti Qori'ah Muhafidloh — NPM : 247006111141
+- Nama : Najmi Sabila Almusfiroh, NPM : 247006111125
+- Nama : Muthia Febrahma Khoirunnisa, NPM : 247006111130
+- Nama : Siti Qori'ah Muhafidloh, NPM : 247006111141
 
 ## Fitur
 

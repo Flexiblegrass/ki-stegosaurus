@@ -13,8 +13,6 @@ try:
 except ImportError:
     _HAS_SVTTK = False
 
-
-
 PALETTE = {
     "dark": {
         "accent": "#5b8def",
@@ -142,7 +140,6 @@ class StegoApp(tk.Tk):
         return "☀️  Terang" if self.theme_mode == "dark" else "🌙  Gelap"
 
     def _refresh_dynamic_labels(self):
-        # panggil ulang label yang punya style berwarna agar sinkron tema
         if self.cover_arr is not None:
             cap = core.capacity_bytes(self.cover_arr)
             self._set_capacity_badge(cap)
