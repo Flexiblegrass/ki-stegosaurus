@@ -36,7 +36,6 @@ PALETTE = {
 
 
 class Card(ttk.Frame):
-    """Panel bergaya 'kartu': judul kecil + border halus + padding."""
 
     def __init__(self, master, title="", icon="", **kw):
         super().__init__(master, style="AppCard.TFrame", padding=(14, 10))
@@ -133,7 +132,7 @@ class StegoApp(tk.Tk):
             sv_ttk.set_theme(self.theme_mode)
         self._apply_custom_styles()
         self.theme_btn.config(text=self._theme_icon())
-        # refresh warna dinamis yang sudah ditampilkan
+
         self._refresh_dynamic_labels()
 
     def _theme_icon(self):
@@ -406,7 +405,7 @@ class StegoApp(tk.Tk):
         ms = metrics.mse(self.cover_arr, self.stego_arr)
         chg = metrics.changed_pixels_percent(self.cover_arr, self.stego_arr)
         ukuran_asli = len(message)
-        ukuran_enc = len(crypto.encrypt(message, pw))   # ukuran setelah dienkripsi
+        ukuran_enc = len(crypto.encrypt(message, pw))   
 
         self._last_stats = (ps, ms, chg, ukuran_asli, ukuran_enc, out)
         self._render_result_stats(*self._last_stats)
