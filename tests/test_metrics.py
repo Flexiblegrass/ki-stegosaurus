@@ -1,10 +1,3 @@
-"""
-Unit test modul metrik & analisis  (tanggung jawab Anggota 3).
-Menguji metrics.py (PSNR, MSE, histogram, bidang LSB).
-
-Jalankan:  python tests/test_metrics.py   atau   python -m pytest tests/ -v
-"""
-
 import os
 import sys
 import numpy as np
