@@ -238,10 +238,15 @@ class StegoApp(tk.Tk):
         self.ent_key.grid(row=0, column=4, sticky="we", padx=(6, 6))
         self._add_reveal_button(sec, self.ent_key, row=0, col=5)
 
-        # Tombol aksi utama
-        ttk.Button(f, text="🔐  SISIP  &  SIMPAN STEGO", style="Big.TButton",
-                   command=self.do_embed).grid(
-            row=3, column=0, columnspan=2, pady=(2, 12))
+        # Tombol aksi utama  (+ tombol steganalisis: histogram & bidang LSB)
+        action_row = ttk.Frame(f)
+        action_row.grid(row=3, column=0, columnspan=2, pady=(2, 12))
+        ttk.Button(action_row, text="🔐  SISIP  &  SIMPAN STEGO",
+                   style="Big.TButton",
+                   command=self.do_embed).pack(side="left", padx=(0, 10))
+        ttk.Button(action_row, text="🔬  Bidang LSB & Histogram",
+                   style="Big.TButton",
+                   command=self.do_steganalisis).pack(side="left")
 
         # Preview berdampingan
         prev = ttk.Frame(f)
@@ -405,7 +410,7 @@ class StegoApp(tk.Tk):
         ms = metrics.mse(self.cover_arr, self.stego_arr)
         chg = metrics.changed_pixels_percent(self.cover_arr, self.stego_arr)
         ukuran_asli = len(message)
-        ukuran_enc = len(crypto.encrypt(message, pw))   
+        ukuran_enc = len(crypto.encrypt(message, pw))
 
         self._last_stats = (ps, ms, chg, ukuran_asli, ukuran_enc, out)
         self._render_result_stats(*self._last_stats)
@@ -420,6 +425,69 @@ class StegoApp(tk.Tk):
             f"PSNR           : {ps:.2f} dB\n"
             f"MSE            : {ms:.5f}\n"
             f"Δ Kanal        : {chg:.3f}%")
+
+    def do_steganalisis(self):
+        """
+        STEGANALISIS dari GUI: menampilkan histogram (cover vs stego) dan
+        bidang LSB (cover vs stego) dari citra yang BARU SAJA disisipi.
+        Data diambil langsung dari citra cover & stego milik pengguna.
+        """
+        if self.cover_arr is None or self.stego_arr is None:
+            messagebox.showwarning(
+                "Perhatian",
+                "Sisipkan pesan dulu (klik SISIP & SIMPAN STEGO), "
+                "baru tampilkan histogram & bidang LSB-nya.")
+            return
+        try:
+            import matplotlib
+            matplotlib.use("Agg")
+            import matplotlib.pyplot as plt
+        except ImportError:
+            messagebox.showerror(
+                "matplotlib belum ada",
+                "Fitur ini butuh matplotlib.\n\nInstal dulu di terminal:\n"
+                "    pip install matplotlib")
+            return
+
+        cover, stego = self.cover_arr, self.stego_arr
+        ps = metrics.psnr(cover, stego)
+        chg = metrics.changed_pixels_percent(cover, stego)
+        hc, hs = metrics.histogram(cover), metrics.histogram(stego)
+        x = np.arange(256)
+        pal = getattr(self, "_pal", PALETTE["dark"])
+
+        fig, ax = plt.subplots(2, 2, figsize=(9, 7))
+        ax[0, 0].bar(x, hc, width=1.0, color=pal["accent"])
+        ax[0, 0].set_title("Histogram Cover")
+        ax[0, 0].set_xlabel("Nilai byte (0-255)"); ax[0, 0].set_ylabel("Frekuensi")
+        ax[0, 1].bar(x, hs, width=1.0, color=pal["danger"])
+        ax[0, 1].set_title("Histogram Stego")
+        ax[0, 1].set_xlabel("Nilai byte (0-255)"); ax[0, 1].set_ylabel("Frekuensi")
+        ax[1, 0].imshow(metrics.lsb_plane(cover))
+        ax[1, 0].set_title("Bidang LSB Cover"); ax[1, 0].axis("off")
+        ax[1, 1].imshow(metrics.lsb_plane(stego))
+        ax[1, 1].set_title("Bidang LSB Stego (ada pesan)"); ax[1, 1].axis("off")
+        fig.suptitle(f"Steganalisis Visual   |   PSNR = {ps:.2f} dB   |   "
+                     f"kanal berubah = {chg:.3f}%", fontweight="bold")
+        fig.tight_layout()
+        out_png = "steganalisis_gui.png"
+        fig.savefig(out_png, dpi=110)
+        plt.close(fig)
+
+        # tampilkan di jendela baru DALAM aplikasi
+        win = tk.Toplevel(self)
+        win.title("Hasil Steganalisis Visual")
+        img = Image.open(out_png)
+        img.thumbnail((900, 720))
+        tkimg = ImageTk.PhotoImage(img)
+        self._thumb_refs.append(tkimg)
+        ttk.Label(win, image=tkimg).pack(padx=8, pady=8)
+        ttk.Label(win,
+                  text=f"Tersimpan sebagai {out_png}.  Histogram cover & stego "
+                       f"hampir sama (PSNR {ps:.2f} dB); bidang LSB stego "
+                       f"berubah karena berisi pesan.",
+                  wraplength=880).pack(padx=8, pady=(0, 8))
+        self._set_status(f"Histogram & bidang LSB ditampilkan (disimpan {out_png}).")
 
     def _clear_stats(self):
         for w in self.stats_row.winfo_children():
