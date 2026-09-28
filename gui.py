@@ -145,7 +145,6 @@ class StegoApp(tk.Tk):
         if getattr(self, "_last_stats", None):
             self._render_result_stats(*self._last_stats)
 
-    # ---------------- UI ----------------
     def _build_ui(self):
         outer = ttk.Frame(self, padding=16)
         outer.pack(fill="both", expand=True)
@@ -163,7 +162,6 @@ class StegoApp(tk.Tk):
                                      command=self.toggle_theme)
         self.theme_btn.pack(side="right", anchor="ne")
 
-        # ---- Tabs ----
         nb = ttk.Notebook(outer)
         nb.pack(fill="both", expand=True)
         self.tab_embed = ttk.Frame(nb, padding=(4, 12))
@@ -173,7 +171,6 @@ class StegoApp(tk.Tk):
         self._build_embed_tab()
         self._build_extract_tab()
 
-        # ---- Status bar ----
         status_bar = ttk.Frame(outer)
         status_bar.pack(fill="x", pady=(10, 0))
         ttk.Separator(status_bar).pack(fill="x", pady=(0, 6))
@@ -183,13 +180,11 @@ class StegoApp(tk.Tk):
     def _set_status(self, text):
         self.status_lbl.config(text=f"ℹ️  {text}")
 
-    # ---- Tab: Sisip ----
     def _build_embed_tab(self):
         f = self.tab_embed
         f.columnconfigure(0, weight=1)
         f.columnconfigure(1, weight=1)
 
-        # Kartu 1: cover
         card_cover = Card(f, "Citra Cover", "🖼️")
         card_cover.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 8))
         row = ttk.Frame(card_cover.body, style="AppCardBody.TFrame")
@@ -204,7 +199,6 @@ class StegoApp(tk.Tk):
         self.lbl_cap = ttk.Label(info, text="", style="BadgeInfo.TLabel")
         self.lbl_cap.pack(anchor="w")
 
-        # Kartu 2: pesan
         card_msg = Card(f, "Pesan yang Disisipkan", "✉️")
         card_msg.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(0, 8))
         self.txt_msg = tk.Text(card_msg.body, height=3, wrap="word",
@@ -220,7 +214,6 @@ class StegoApp(tk.Tk):
                                       style="Hint.TLabel")
         self.lbl_msgfile.pack(side="left", padx=10)
 
-        # Kartu 3: keamanan
         card_sec = Card(f, "Keamanan", "🔑")
         card_sec.grid(row=2, column=0, columnspan=2, sticky="ew", pady=(0, 8))
         sec = card_sec.body
@@ -238,17 +231,15 @@ class StegoApp(tk.Tk):
         self.ent_key.grid(row=0, column=4, sticky="we", padx=(6, 6))
         self._add_reveal_button(sec, self.ent_key, row=0, col=5)
 
-        # Tombol aksi utama  (+ tombol steganalisis: histogram & bidang LSB)
         action_row = ttk.Frame(f)
         action_row.grid(row=3, column=0, columnspan=2, pady=(2, 12))
-        ttk.Button(action_row, text="🔐  SISIP  &  SIMPAN STEGO",
+        ttk.Button(action_row, text="🔐  Sisip  &  Simpan Stego",
                    style="Big.TButton",
                    command=self.do_embed).pack(side="left", padx=(0, 10))
         ttk.Button(action_row, text="🔬  Bidang LSB & Histogram",
                    style="Big.TButton",
                    command=self.do_steganalisis).pack(side="left")
 
-        # Preview berdampingan
         prev = ttk.Frame(f)
         prev.grid(row=4, column=0, columnspan=2, sticky="nsew")
         f.rowconfigure(4, weight=1)
@@ -268,7 +259,6 @@ class StegoApp(tk.Tk):
                                    style="Preview.TLabel", anchor="center")
         self.cv_stego.pack(fill="both", expand=True)
 
-        # Kartu statistik hasil
         self.stat_card = Card(f, "Hasil Penyisipan", "📊")
         self.stat_card.grid(row=5, column=0, columnspan=2, sticky="ew", pady=(10, 0))
         self.stats_row = ttk.Frame(self.stat_card.body, style="AppCardBody.TFrame")
@@ -285,7 +275,6 @@ class StegoApp(tk.Tk):
         ttk.Button(parent, text="👁", width=3, style="Ghost.TButton",
                    command=toggle).grid(row=row, column=col, sticky="w")
 
-    # ---- Tab: Ekstrak ----
     def _build_extract_tab(self):
         f = self.tab_extract
         f.columnconfigure(0, weight=1)
@@ -323,7 +312,6 @@ class StegoApp(tk.Tk):
         card_out = Card(f, "Hasil Pesan", "📄")
         card_out.grid(row=3, column=0, sticky="nsew")
         f.rowconfigure(3, weight=1)
-        # baris info hasil ekstraksi (ukuran pesan + status)
         self.lbl_extract_info = ttk.Label(card_out.body, text="",
                                            style="BadgeSuccess.TLabel")
         self.lbl_extract_info.pack(anchor="w", pady=(0, 6))
@@ -335,7 +323,7 @@ class StegoApp(tk.Tk):
                    style="Ghost.TButton",
                    command=self.save_extracted).pack(pady=(8, 0), anchor="w")
 
-    # ---------------- Aksi ----------------
+    #  Aksi 
     def pick_cover(self):
         path = filedialog.askopenfilename(
             filetypes=[("Citra PNG/BMP", "*.png *.bmp"), ("Semua", "*.*")])
@@ -372,7 +360,7 @@ class StegoApp(tk.Tk):
         if not pw or not key:
             messagebox.showwarning("Perhatian", "Isi kata sandi dan stego-key.")
             return
-        # ambil pesan: berkas jika dipilih, selain itu teks
+
         if self.msg_file:
             with open(self.msg_file, "rb") as fp:
                 message = fp.read()
@@ -405,7 +393,6 @@ class StegoApp(tk.Tk):
         core.save_image(self.stego_arr, out)
         self._show(self.cv_stego, self.stego_arr)
 
-        # ---- hitung SELURUH metrik (cover vs stego) ----
         ps = metrics.psnr(self.cover_arr, self.stego_arr)
         ms = metrics.mse(self.cover_arr, self.stego_arr)
         chg = metrics.changed_pixels_percent(self.cover_arr, self.stego_arr)
@@ -427,15 +414,10 @@ class StegoApp(tk.Tk):
             f"Δ Kanal        : {chg:.3f}%")
 
     def do_steganalisis(self):
-        """
-        STEGANALISIS dari GUI: menampilkan histogram (cover vs stego) dan
-        bidang LSB (cover vs stego) dari citra yang BARU SAJA disisipi.
-        Data diambil langsung dari citra cover & stego milik pengguna.
-        """
         if self.cover_arr is None or self.stego_arr is None:
             messagebox.showwarning(
                 "Perhatian",
-                "Sisipkan pesan dulu (klik SISIP & SIMPAN STEGO), "
+                "Sisipkan pesan dulu (klik Sisip & Simpan Stego), "
                 "baru tampilkan histogram & bidang LSB-nya.")
             return
         try:
