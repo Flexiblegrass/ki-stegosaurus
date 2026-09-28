@@ -264,7 +264,7 @@ class StegoApp(tk.Tk):
         self.stats_row = ttk.Frame(self.stat_card.body, style="AppCardBody.TFrame")
         self.stats_row.pack(fill="x")
         self.lbl_stat_placeholder = ttk.Label(
-            self.stats_row, text="Belum ada hasil — sisipkan pesan terlebih dahulu.",
+            self.stats_row, text="Belum ada hasil, sisipkan pesan terlebih dahulu.",
             style="Hint.TLabel")
         self.lbl_stat_placeholder.pack(anchor="w")
         self._last_stats = None
@@ -475,7 +475,7 @@ class StegoApp(tk.Tk):
         for w in self.stats_row.winfo_children():
             w.destroy()
         self.lbl_stat_placeholder = ttk.Label(
-            self.stats_row, text="Belum ada hasil — sisipkan pesan terlebih dahulu.",
+            self.stats_row, text="Belum ada hasil, sisipkan pesan terlebih dahulu.",
             style="Hint.TLabel")
         self.lbl_stat_placeholder.pack(anchor="w")
         self._last_stats = None
