@@ -33,10 +33,6 @@ def save_image(arr: np.ndarray, path: str) -> None:
 
 
 def capacity_bytes(arr: np.ndarray) -> int:
-    """
-    Kapasitas maksimum PAYLOAD (byte) untuk citra ini.
-    Total slot = jumlah seluruh kanal warna. Dikurangi header, lalu /8.
-    """
     total_slots = arr.size          # H*W*3
     return (total_slots - HEADER_BITS) // 8
 
@@ -47,11 +43,6 @@ def _build_stream(payload: bytes) -> list:
 
 
 def embed(cover: np.ndarray, message: bytes, password: str, stego_key: str) -> np.ndarray:
-    """
-    Sisipkan `message` (bytes) ke dalam citra `cover`.
-    Langkah: enkripsi AES -> susun header+payload -> acak posisi -> tulis LSB.
-    Mengembalikan citra stego (array baru).
-    """
     if isinstance(message, str):
         message = message.encode("utf-8")
 
@@ -80,11 +71,6 @@ def embed(cover: np.ndarray, message: bytes, password: str, stego_key: str) -> n
 
 
 def extract(stego: np.ndarray, password: str, stego_key: str) -> bytes:
-    """
-    Ekstrak dan dekripsi pesan dari citra `stego`.
-    Melempar ExtractionError bila stego-key salah, atau crypto.DecryptionError
-    bila kata sandi salah / data berubah.
-    """
     flat = stego.reshape(-1)
     perm = prng.permutation(flat.size, stego_key)
 
@@ -111,7 +97,7 @@ def extract(stego: np.ndarray, password: str, stego_key: str) -> bytes:
     return crypto.decrypt(payload, password)
 
 
-# ---- fungsi bantu berbasis path (dipakai GUI) ----
+# fungsi bantu berbasis path (dipakai GUI) 
 
 def embed_to_file(cover_path, out_path, message, password, stego_key):
     cover = load_image_rgb(cover_path)
