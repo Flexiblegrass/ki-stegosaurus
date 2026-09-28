@@ -34,7 +34,6 @@ PALETTE = {
     },
 }
 
-
 class Card(ttk.Frame):
 
     def __init__(self, master, title="", icon="", **kw):
@@ -323,7 +322,6 @@ class StegoApp(tk.Tk):
                    style="Ghost.TButton",
                    command=self.save_extracted).pack(pady=(8, 0), anchor="w")
 
-    #  Aksi 
     def pick_cover(self):
         path = filedialog.askopenfilename(
             filetypes=[("Citra PNG/BMP", "*.png *.bmp"), ("Semua", "*.*")])
@@ -456,7 +454,6 @@ class StegoApp(tk.Tk):
         fig.savefig(out_png, dpi=110)
         plt.close(fig)
 
-        # tampilkan di jendela baru DALAM aplikasi
         win = tk.Toplevel(self)
         win.title("Hasil Steganalisis Visual")
         img = Image.open(out_png)
