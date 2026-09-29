@@ -1,2 +1,13 @@
+# Cache Python
 __pycache__/
 *.pyc
+*.pyo
+
+# Artefak build PyInstaller (bukan kode sumber)
+build/
+dist/
+*.spec
+*.exe
+
+# File hasil sementara (opsional)
+steganalisis_gui.png
