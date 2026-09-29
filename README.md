@@ -1,136 +1,141 @@
-# StegoLSB
+# StegoLSB: Aplikasi Steganografi LSB + AES
 
-### Aplikasi Steganografi LSB + AES
-
-StegoLSB adalah aplikasi steganografi yang digunakan untuk menyembunyikan pesan atau berkas ke dalam citra digital.
-
-Aplikasi ini menggunakan metode **LSB (Least Significant Bit)** yang dibuat sendiri. Sebelum disisipkan ke dalam citra, pesan terlebih dahulu dienkripsi menggunakan **AES-256-GCM** sehingga isi pesan tidak bisa langsung dibaca meskipun berhasil diekstraksi.
-
-Aplikasi ini dibuat untuk memenuhi Tugas Proyek Aplikasi Kriptografi dengan topik **Steganografi** pada mata kuliah Keamanan Informasi.
+Aplikasi steganografi untuk menyembunyikan pesan atau berkas ke dalam citra digital menggunakan metode LSB (Least Significant Bit) yang ditulis sendiri. Pesan dienkripsi menggunakan AES-256-GCM terlebih dahulu sebelum disisipkan. Aplikasi ini dibuat untuk Tugas Proyek Aplikasi Kriptografi (Topik B: Steganografi), mata kuliah Keamanan Informasi.
 
 ## Anggota Kelompok
 
-**Najmi Sabila Almusfiroh**
-NPM: 247006111125
-
-**Muthia Febrahma Khoirunnisa**
-NPM: 247006111130
-
-**Siti Qori'ah Muhafidloh**
-NPM: 247006111141
+Najmi Sabila Almusfiroh, NPM: 247006111125
+Muthia Febrahma Khoirunnisa, NPM: 247006111130
+Siti Qori'ah Muhafidloh, NPM: 247006111141
 
 ## Fitur
 
-StegoLSB memiliki beberapa fitur utama, yaitu:
+1. Penyisipan dan ekstraksi pesan menggunakan LSB pada citra PNG/BMP.
+2. Header untuk menyimpan panjang pesan agar proses ekstraksi berhenti pada posisi yang tepat.
+3. Pengacakan posisi bit menggunakan PRNG LCG dan Fisher-Yates dengan seed dari stego-key.
+4. Enkripsi pesan menggunakan AES-256-GCM dengan kunci dari PBKDF2.
+5. Salt dan nonce dibuat secara acak pada setiap proses enkripsi.
+6. Perhitungan kapasitas citra dan penolakan pesan yang melebihi kapasitas.
+7. Ekstraksi ditolak jika stego-key atau kata sandi salah, atau citra telah diubah.
+8. GUI Tkinter menampilkan citra cover dan stego secara berdampingan beserta nilai PSNR.
 
-1. Menyisipkan dan mengekstraksi pesan menggunakan metode LSB pada citra PNG dan BMP.
-2. Menggunakan header untuk menyimpan informasi panjang pesan sehingga proses ekstraksi dapat berhenti pada bagian yang tepat.
-3. Mengacak posisi bit menggunakan PRNG LCG dengan algoritma Fisher-Yates. Seed berasal dari stego-key yang dimasukkan pengguna.
-4. Mengenkripsi pesan menggunakan AES-256-GCM sebelum pesan disisipkan.
-5. Menggunakan PBKDF2 untuk menurunkan kunci dari kata sandi.
-6. Menggunakan salt dan nonce acak pada setiap proses enkripsi.
-7. Menghitung kapasitas citra dan menolak pesan jika ukurannya melebihi kapasitas yang tersedia.
-8. Menolak proses ekstraksi jika stego-key atau kata sandi yang digunakan tidak sesuai.
-9. Mendeteksi perubahan pada citra melalui verifikasi tag AES-GCM.
-10. Menampilkan citra cover dan citra stego secara berdampingan pada GUI, lengkap dengan nilai PSNR.
+### Fitur Pengayaan
+
+Aplikasi juga memiliki varian m-bit LSB dengan m = 1 sampai 6, sedangkan GUI menyediakan m = 1 sampai 4. Nilai m disimpan di header sehingga proses ekstraksi dapat dilakukan secara otomatis.
+
+Selain citra, aplikasi mendukung steganografi audio WAV PCM 8-bit dan 16-bit, baik mono maupun stereo. Fitur ini menggunakan enkripsi AES-GCM, header, pengacakan posisi sampel, dan m-bit LSB. Metrik yang digunakan adalah SNR, PSNR, dan MSE.
+
+Terdapat juga fitur steganalisis menggunakan uji chi-square. Pengujian dilakukan secara gabungan dan per kanal R/G/B, serta dilengkapi grafik selisih pasangan nilai histogram.
 
 ## Struktur Proyek
 
 ```text
 StegoLSB/
 ├── stego/
-│   ├── crypto.py          # AES-256-GCM + PBKDF2
-│   ├── prng.py            # LCG + Fisher-Yates untuk mengacak posisi
-│   ├── lsb.py             # Logika konversi bit dan LSB
-│   ├── core.py            # Proses penyisipan dan ekstraksi
-│   └── metrics.py         # PSNR, MSE, histogram, dan bidang LSB
-├── gui.py                 # Aplikasi GUI menggunakan Tkinter
-├── run_experiments.py     # Pengujian otomatis dan pembuatan hasil
+│   ├── crypto.py
+│   ├── prng.py
+│   ├── lsb.py
+│   ├── core.py
+│   ├── audio.py
+│   ├── steganalysis.py
+│   └── metrics.py
+├── gui.py
+├── run_experiments.py
+├── run_experiments_pengayaan.py
 ├── tests/
-│   └── test_stego.py      # Unit test
-├── sample_images/         # Citra yang digunakan untuk pengujian
-├── hasil_uji/             # Hasil pengujian
+├── sample_images/
+├── sample_audio/
+├── hasil_uji/
 ├── requirements.txt
 └── README.md
 ```
 
-## Instalasi
+## Cara Instalasi
 
-StegoLSB membutuhkan **Python 3.9 atau lebih baru**.
+Aplikasi membutuhkan Python 3.9 atau lebih baru.
+
 ```bash
 python -m venv venv
 ```
 
-Untuk Windows:
+Windows:
+
 ```bash
 venv\Scripts\activate
 ```
 
-Untuk Linux atau macOS:
+Linux/Mac:
+
 ```bash
 source venv/bin/activate
 ```
 
-Setelah itu, install semua library yang dibutuhkan:
+Kemudian install dependensi:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-StegoLSB menggunakan Tkinter untuk tampilan GUI. Pada Windows dan macOS, Tkinter biasanya sudah tersedia bersama Python.
-Jika menggunakan Linux dan Tkinter belum tersedia, install dengan:
+Tkinter digunakan untuk GUI. Pada Windows dan macOS biasanya sudah tersedia bersama Python. Jika menggunakan Linux dan Tkinter belum tersedia, install dengan:
+
 ```bash
 sudo apt install python3-tk
 ```
 
-## Menjalankan Aplikasi
+## Cara Menjalankan
 
-### GUI
-Jalankan perintah berikut:
+Untuk menjalankan aplikasi GUI:
+
 ```bash
 python gui.py
 ```
 
-Setelah aplikasi terbuka, terdapat dua bagian utama.
-**Sisip Pesan**
-Pilih citra cover dalam format PNG atau BMP, kemudian masukkan pesan atau pilih berkas yang ingin disembunyikan.
-Masukkan juga kata sandi dan stego-key. Setelah itu klik tombol **SISIP & SIMPAN STEGO**.
-Aplikasi akan membuat citra stego dan menampilkan citra cover serta stego secara berdampingan. Nilai PSNR juga ditampilkan untuk melihat perubahan kualitas citra setelah proses penyisipan.
+Pada tab **Sisip Pesan**, pilih citra cover, masukkan pesan atau berkas, kemudian isi kata sandi, stego-key, dan nilai m. Setelah itu klik **SISIP & SIMPAN STEGO**.
 
-**Ekstrak Pesan**
-Pilih citra stego yang sudah dibuat sebelumnya, kemudian masukkan kata sandi dan stego-key yang digunakan saat proses penyisipan.
-Klik **EKSTRAK PESAN** untuk mengambil kembali pesan yang tersimpan di dalam citra.
+Pada tab **Ekstrak Pesan**, pilih citra stego dan masukkan kata sandi serta stego-key yang sama. Nilai m akan dibaca otomatis dari header.
+
+Tab **Audio WAV** digunakan untuk menyisipkan dan mengekstraksi pesan dari berkas WAV. Tab **Chi-Square** digunakan untuk melakukan steganalisis pada citra.
 
 ## Pengujian
-Untuk menjalankan pengujian otomatis, gunakan:
+
+Pengujian utama dapat dijalankan dengan:
+
 ```bash
 python run_experiments.py
 ```
 
-Hasil pengujian akan disimpan di folder `hasil_uji/`.
-Beberapa hasil yang dihasilkan antara lain:
-`hasil_psnr_mse.xlsx` berisi tabel PSNR dan MSE dari 5 citra dengan 3 ukuran pesan yang berbeda, termasuk hasil uji kerapuhan terhadap JPEG.
-`histogram_*.png` digunakan untuk membandingkan histogram citra cover dan citra stego.
-`lsb_plane_*.png` digunakan untuk melihat perbandingan bidang LSB pada citra cover dan stego.
-`berdampingan_*.png` menampilkan citra cover dan stego secara berdampingan.
+Hasilnya disimpan di folder `hasil_uji/`, termasuk `hasil_psnr_mse.xlsx`, histogram, bidang LSB, dan citra cover serta stego.
+
+Untuk pengujian fitur pengayaan:
+
+```bash
+python run_experiments_pengayaan.py
+```
+
+Hasilnya meliputi `hasil_pengayaan.xlsx`, `mbit_tradeoff.png`, `chi_square_pvalue.png`, `chi_square_selisih_pasangan.png`, dan `audio_snr.png`.
+
+Berkas WAV untuk pengujian akan dibuat otomatis di `sample_audio/` jika belum tersedia.
 
 ## Unit Test
 
-Unit test dapat dijalankan dengan:
 ```bash
-python tests/test_stego.py
+python tests/test_core_lsb.py
+python tests/test_crypto_prng.py
+python tests/test_metrics.py
+python tests/test_pengayaan.py
 ```
 
-atau menggunakan pytest:
+Atau jalankan semuanya dengan:
+
 ```bash
 python -m pytest -v
 ```
 
-## Contoh Penggunaan Tanpa GUI
-StegoLSB juga dapat digunakan langsung melalui kode Python.
+## Contoh Penggunaan
+
 ```python
 from stego import core
 
-# Sisip pesan
 cover, stego = core.embed_to_file(
     "sample_images/04_foto_sintetis.png",
     "stego.png",
@@ -139,7 +144,6 @@ cover, stego = core.embed_to_file(
     stego_key="kunci-posisi"
 )
 
-# Ekstrak pesan
 pesan = core.extract_from_file(
     "stego.png",
     password="kata-sandi-ku",
@@ -147,53 +151,98 @@ pesan = core.extract_from_file(
 )
 
 print(pesan.decode())
-# Output: Pesan sangat rahasia
 ```
 
-## Cara Kerja
+Untuk m-bit LSB:
 
-Proses kerja StegoLSB secara umum terdiri dari beberapa tahap.
+```python
+from stego import core
 
-**1. Enkripsi pesan**
-Pesan terlebih dahulu dienkripsi menggunakan AES-256-GCM. Kunci enkripsi diperoleh dari kata sandi menggunakan PBKDF2.
-Setiap proses enkripsi menggunakan salt dan nonce yang dibuat secara acak. Hasil enkripsi terdiri dari:
+core.embed_to_file(
+    "sample_images/04_foto_sintetis.png",
+    "stego_m3.png",
+    "pesan",
+    "kata-sandi-ku",
+    "kunci-posisi",
+    m=3
+)
+```
+
+Untuk audio WAV:
+
+```python
+from stego import audio
+
+audio.embed_to_file(
+    "sample_audio/01_nada_16bit_mono.wav",
+    "stego.wav",
+    "pesan audio",
+    "kata-sandi-ku",
+    "kunci-posisi",
+    m=2
+)
+
+print(audio.extract_from_file(
+    "stego.wav",
+    "kata-sandi-ku",
+    "kunci-posisi"
+))
+```
+
+Untuk chi-square:
+
+```python
+from stego import core, steganalysis
+
+hasil = steganalysis.analyze_image(
+    core.load_image_rgb("stego_m3.png")
+)
+
+print(hasil["gabungan"])
+```
+
+## Cara Kerja Singkat
+
+Pesan pertama kali dienkripsi menggunakan AES-256-GCM. Kunci diturunkan dari kata sandi menggunakan PBKDF2 dan salt acak. Hasil enkripsi terdiri dari `salt(16) + nonce(12) + ciphertext + tag`.
+
+Selanjutnya ditambahkan header 7 byte berupa `'ST' + versi + panjang_payload`. Header digunakan untuk mengetahui panjang payload saat proses ekstraksi.
+
+Posisi bit kemudian diacak menggunakan Fisher-Yates dengan PRNG LCG yang menggunakan stego-key sebagai seed. Bit header dan payload disisipkan ke posisi LSB yang sudah diacak.
+
+Saat ekstraksi, urutan posisi dibuat kembali menggunakan stego-key yang sama. Header dibaca untuk mengetahui panjang payload, kemudian data didekripsi. Tag AES-GCM digunakan untuk memastikan data masih sesuai dan tidak mengalami perubahan.
+
+## Fitur Pengayaan
+
+Pada m-bit LSB, setiap kanal dapat menyimpan m bit. Header tetap ditulis menggunakan 1-bit LSB, sedangkan payload menggunakan m bit sesuai nilai yang dipilih.
+
+Kapasitas dihitung dengan:
+
 ```text
-salt (16 byte) + nonce (12 byte) + ciphertext + tag
+(jumlah_slot − 56) × m / 8
 ```
 
-**2. Pembuatan header**
-Sebelum payload disisipkan, aplikasi menambahkan header berukuran 7 byte:
+Perkiraan PSNR saat kapasitas penuh:
+
 ```text
-'ST' + versi + panjang_payload (4 byte)
+m=1 → 51,1 dB
+m=2 → 44,1 dB
+m=3 → 37,9 dB
+m=4 → 31,9 dB
+m=5 → 25,8 dB
 ```
-Header ini digunakan untuk mengetahui panjang payload sehingga proses ekstraksi dapat berhenti pada posisi yang benar.
 
-**3. Pengacakan posisi bit**
-Slot LSB pada setiap kanal R, G, dan B di dalam citra diacak menggunakan PRNG LCG dengan algoritma Fisher-Yates.
-Urutan pengacakan ditentukan oleh seed yang berasal dari stego-key.
+Pada audio WAV, sampel audio diperlakukan sebagai slot seperti kanal pada citra. Metrik yang digunakan adalah SNR, PSNR, dan MSE.
 
-**4. Penyisipan**
-Bit dari header dan payload kemudian ditulis ke bagian LSB pada posisi yang sudah diacak.
-Dengan cara ini, pesan tidak disisipkan secara berurutan dari awal sampai akhir citra.
-
-**5. Ekstraksi**
-
-Pada proses ekstraksi, aplikasi menggunakan stego-key yang sama untuk menghasilkan kembali urutan posisi bit.
-Header dibaca terlebih dahulu untuk mengetahui panjang payload. Setelah seluruh payload diperoleh, data didekripsi menggunakan kata sandi.
-AES-GCM kemudian memeriksa tag untuk memastikan data masih sesuai dengan data saat enkripsi.
+Uji chi-square digunakan untuk melihat perubahan distribusi pasangan nilai histogram. Pengujian dapat dilakukan pada citra secara keseluruhan maupun pada masing-masing kanal R/G/B.
 
 ## Keamanan
 
-Beberapa hal yang diperhatikan dalam implementasi StegoLSB:
-1. Kata sandi dan kunci tidak disimpan di dalam source code. Keduanya dimasukkan oleh pengguna saat aplikasi dijalankan.
-2. Salt dan nonce dibuat menggunakan `os.urandom` sehingga nilainya berbeda secara acak pada setiap proses enkripsi.
-3. Pesan dilindungi menggunakan AES-256-GCM.
-4. Kunci enkripsi diturunkan dari kata sandi menggunakan PBKDF2.
-5. Aplikasi tidak menggunakan algoritma lama seperti MD5, SHA-1, DES, RC4, maupun mode ECB.
-6. Implementasi LSB, header, dan pengacakan posisi dibuat sendiri untuk kebutuhan proyek.
+Kunci dan kata sandi tidak disimpan di dalam source code dan dimasukkan saat aplikasi dijalankan. Salt dan nonce dibuat menggunakan `os.urandom`.
+
+Aplikasi tidak menggunakan MD5, SHA-1, DES, RC4, maupun mode ECB. Metode LSB, header, dan pengacakan posisi dibuat sendiri.
 
 ## Batasan
-Metode LSB yang digunakan pada aplikasi ini termasuk metode yang **fragile**.
-Artinya, pesan yang sudah disisipkan dapat rusak apabila citra stego mengalami perubahan tertentu. Salah satu contohnya adalah ketika citra PNG disimpan ulang atau dikonversi ke format JPEG.
-JPEG menggunakan kompresi lossy yang dapat mengubah nilai piksel, termasuk bagian LSB tempat pesan disisipkan.
-Karena itu, citra hasil steganografi sebaiknya tetap disimpan dalam format **PNG atau BMP** agar pesan dapat diekstraksi dengan benar.
+
+Audio yang didukung adalah WAV PCM 8-bit dan 16-bit. Format 24-bit, float, dan MP3 belum didukung.
+
+Metode LSB bersifat **fragile**. Menyimpan ulang citra stego ke format lossy seperti JPEG dapat merusak pesan. Karena itu, gunakan PNG atau BMP untuk menjaga pesan tetap dapat diekstraksi.
