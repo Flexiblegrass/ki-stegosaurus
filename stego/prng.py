@@ -24,7 +24,6 @@ def permutation(n: int, stego_key: str):
 
     rng = LCG(seed_from_key(stego_key))
     idx = list(range(n))
-    # Fisher-Yates shuffle
     for i in range(n - 1, 0, -1):
         j = rng.next() % (i + 1)
         idx[i], idx[j] = idx[j], idx[i]

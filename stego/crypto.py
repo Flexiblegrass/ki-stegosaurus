@@ -24,7 +24,6 @@ def _derive_key(password: str, salt: bytes) -> bytes:
 
 
 def encrypt(plaintext: bytes, password: str) -> bytes:
-
     if isinstance(plaintext, str):
         plaintext = plaintext.encode("utf-8")
     salt = os.urandom(SALT_LEN)          
@@ -34,9 +33,7 @@ def encrypt(plaintext: bytes, password: str) -> bytes:
     ciphertext = aesgcm.encrypt(nonce, plaintext, None)   
     return salt + nonce + ciphertext
 
-
 def decrypt(blob: bytes, password: str) -> bytes:
-
     if len(blob) < SALT_LEN + NONCE_LEN + 16:
         raise DecryptionError("Data terenkripsi tidak valid / terlalu pendek.")
     salt = blob[:SALT_LEN]
