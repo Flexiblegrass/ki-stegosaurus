@@ -34,7 +34,7 @@ def get_lsb(values: np.ndarray, positions) -> np.ndarray:
 
 # ---------------------------------------------------------------------------
 # Varian m-bit LSB (fitur pengayaan)
-# Satu slot (1 byte kanal warna / 1 sampel audio) menampung m bit, bukan 1 bit.
+# Satu slot (1 byte kanal warna) menampung m bit, bukan 1 bit.
 # m = 1 identik dengan LSB biasa di atas.
 # ---------------------------------------------------------------------------
 MAX_M = 6

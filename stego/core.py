@@ -38,7 +38,7 @@ def save_image(arr: np.ndarray, path: str) -> None:
 def capacity_bytes(arr: np.ndarray, m: int = 1) -> int:
     """Kapasitas payload (byte) bila tiap slot menampung m bit."""
     m = check_m(m)
-    total_slots = arr.size          # H*W*3 (citra) atau jumlah sampel (audio)
+    total_slots = arr.size          # H*W*3
     return ((total_slots - HEADER_BITS) * m) // 8
 
 
@@ -49,10 +49,10 @@ def _build_stream(payload: bytes, m: int = 1) -> list:
 
 def embed_flat(flat: np.ndarray, message: bytes, password: str,
                stego_key: str, m: int = 1) -> np.ndarray:
-    """Inti penyisipan pada larik 1-D unsigned (byte citra / sampel audio).
+    """Inti penyisipan pada larik 1-D unsigned (byte kanal citra).
 
     Mengembalikan salinan `flat` yang sudah disisipi. Dipakai bersama oleh
-    citra (core.embed) dan audio WAV (stego.audio).
+    core.embed.
     """
     m = check_m(m)
     if isinstance(message, str):
