@@ -47,12 +47,59 @@ class Card(ttk.Frame):
         self.body.pack(fill="both", expand=True)
 
 
+class ScrollableFrame(ttk.Frame):
+    """Frame yang bisa di-scroll vertikal (scrollbar + roda mouse).
+
+    Isi widget dipasang ke `self.inner`, bukan ke frame ini.
+    """
+
+    def __init__(self, master, padding=(4, 12)):
+        super().__init__(master)
+        self.canvas = tk.Canvas(self, highlightthickness=0, borderwidth=0)
+        self.vsb = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        self.canvas.configure(yscrollcommand=self.vsb.set)
+        self.vsb.pack(side="right", fill="y")
+        self.canvas.pack(side="left", fill="both", expand=True)
+
+        self.inner = ttk.Frame(self.canvas, padding=padding)
+        self._win = self.canvas.create_window((0, 0), window=self.inner, anchor="nw")
+        self.inner.bind("<Configure>", self._on_inner_configure)
+        self.canvas.bind("<Configure>", self._on_canvas_configure)
+        self.refresh_bg()
+
+    def refresh_bg(self):
+        bg = ttk.Style().lookup("TFrame", "background") or "#1f2430"
+        self.canvas.configure(bg=bg)
+
+    def _on_inner_configure(self, _event=None):
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+    def _on_canvas_configure(self, event):
+        # lebar isi selalu mengikuti lebar jendela
+        self.canvas.itemconfigure(self._win, width=event.width)
+
+    def scroll_units(self, units):
+        # hanya scroll bila isi lebih tinggi daripada jendela
+        if self.canvas.yview() != (0.0, 1.0):
+            self.canvas.yview_scroll(units, "units")
+
+
+def _find_scrollable(widget):
+    while widget is not None:
+        if isinstance(widget, ScrollableFrame):
+            return widget
+        widget = getattr(widget, "master", None)
+    return None
+
+
 class StegoApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("StegoLSB — Steganografi LSB + AES")
-        self.geometry("1240x920")
-        self.minsize(1040, 760)
+        sw, sh = self.winfo_screenwidth(), self.winfo_screenheight()
+        self.geometry(f"{min(1240, sw - 60)}x{min(920, sh - 120)}")
+        self.minsize(640, 420)          # jendela boleh dikecilkan; isi bisa di-scroll
+        self._bind_mousewheel()
 
         self.theme_mode = "dark"
         self._setup_theme()
@@ -68,6 +115,27 @@ class StegoApp(tk.Tk):
 
         self._build_ui()
         self._set_status("Siap. Pilih citra cover untuk mulai menyisipkan pesan.")
+
+    def _bind_mousewheel(self):
+        def on_wheel(event):
+            if isinstance(event.widget, tk.Text):     # kotak teks scroll sendiri
+                return
+            sf = _find_scrollable(event.widget)
+            if sf is None:
+                return
+            if getattr(event, "num", None) == 4:
+                units = -3
+            elif getattr(event, "num", None) == 5:
+                units = 3
+            elif abs(event.delta) >= 120:             # Windows
+                units = -3 * int(event.delta / 120)
+            else:                                     # macOS
+                units = -int(event.delta)
+            sf.scroll_units(units)
+
+        self.bind_all("<MouseWheel>", on_wheel)       # Windows & macOS
+        self.bind_all("<Button-4>", on_wheel)         # Linux
+        self.bind_all("<Button-5>", on_wheel)
 
     def _setup_theme(self):
         if _HAS_SVTTK:
@@ -131,6 +199,8 @@ class StegoApp(tk.Tk):
         if _HAS_SVTTK:
             sv_ttk.set_theme(self.theme_mode)
         self._apply_custom_styles()
+        for sf in (self.tab_embed_sf, self.tab_extract_sf):
+            sf.refresh_bg()
         self.theme_btn.config(text=self._theme_icon())
 
         self._refresh_dynamic_labels()
@@ -164,10 +234,12 @@ class StegoApp(tk.Tk):
 
         nb = ttk.Notebook(outer)
         nb.pack(fill="both", expand=True)
-        self.tab_embed = ttk.Frame(nb, padding=(4, 12))
-        self.tab_extract = ttk.Frame(nb, padding=(4, 12))
-        nb.add(self.tab_embed, text="  🔒  Sisip Pesan  ")
-        nb.add(self.tab_extract, text="  🔓  Ekstrak Pesan  ")
+        self.tab_embed_sf = ScrollableFrame(nb)
+        self.tab_extract_sf = ScrollableFrame(nb)
+        self.tab_embed = self.tab_embed_sf.inner
+        self.tab_extract = self.tab_extract_sf.inner
+        nb.add(self.tab_embed_sf, text="  🔒  Sisip Pesan  ")
+        nb.add(self.tab_extract_sf, text="  🔓  Ekstrak Pesan  ")
         self._build_embed_tab()
         self._build_extract_tab()
 
@@ -479,12 +551,17 @@ class StegoApp(tk.Tk):
 
         win = tk.Toplevel(self)
         win.title("Hasil Steganalisis Visual")
+        sw, sh = self.winfo_screenwidth(), self.winfo_screenheight()
+        win.geometry(f"{min(960, sw - 80)}x{min(820, sh - 120)}")
+        win.minsize(400, 300)
+        sf = ScrollableFrame(win, padding=(8, 8))
+        sf.pack(fill="both", expand=True)
         img = Image.open(out_png)
         img.thumbnail((900, 720))
         tkimg = ImageTk.PhotoImage(img)
         self._thumb_refs.append(tkimg)
-        ttk.Label(win, image=tkimg).pack(padx=8, pady=8)
-        ttk.Label(win,
+        ttk.Label(sf.inner, image=tkimg).pack(padx=8, pady=8)
+        ttk.Label(sf.inner,
                   text=f"Tersimpan sebagai {out_png}.  Histogram cover & stego "
                        f"hampir sama (PSNR {ps:.2f} dB); bidang LSB stego "
                        f"berubah karena berisi pesan.",
